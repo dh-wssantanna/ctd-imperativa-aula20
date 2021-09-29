@@ -1,60 +1,70 @@
 /* 
-    Aula 19 - Criando uma API parte I
+    Aula 20 - Criando uma API parte II
     
-    ( x ) Importar o módulo Express.
-    ( x ) Inicializar o contrutor do Express.
-    ( x ) Criando a Rota e retornando um arquivo HTML.
-    ( x ) Criando um interceptador para configurar o formato JSON como requisição para o servidor.
-    ( x ) Inicializar o servidor.
-
-    Extras
-    ( x ) Importanto o módulo CadastrarProfessor para reaproveitar o cadastro no "banco de dados" improvisado.
-    ( x ) Separando os atributos do objeto.
-    ( x ) Cadastro do professor em nosso "banco de dados" improvidado.
-    ( x ) Apresentar uma mensagem confirmando o cadastro e permitindo que o usuário realizar um novo cadastro.
+    (  ) Instação e configuração de uma template engine. 
+         Documentação: 
+            https://expressjs.com/pt-br/guide/using-template-engines.html
+            https://expressjs.com/en/resources/template-engines.html
+    (  ) Atualizar o código dos arquivos HTML.
+    (  ) Criar uma rota de listagem de professores.
+    (  ) Imprimir na tela a lista de professores.
 */
 
-// 1. Importar o módulo Express.
 const express = require('express');
-// Extra: Importanto o módulo CadastrarProfessor desenvolvido na Aula 15 - Módulos Nativos (File System Nodejs) https://github.com:dh-wssantanna/ctd-imperativa-aula15.git.
-const CadastrarProfessor = require('./cadastrar');
+//  1. Importação do Template Engine¹.
+const handlebars  = require('express-handlebars');
 
-// 2. Inicializar o contrutor do Express.
-const app = new express();
+const CadastrarProfessor = require('./cadastrar');
+const Professores = require('./listar');
+
+const aplicativo = new express();
+const professores = new Professores();
+
+aplicativo.use(express.json()); // Converte os valores do formulário para JSON.
+aplicativo.use(express.urlencoded({ extended: true })); // for parsing aplicativolication/x-www-form-urlencoded
+
+//  2. Definição da pasta responsável pelas telas que o usuário irá acessar.
+aplicativo.set('views','./visualizacoes');
 
 /* 
-    4. Criando um interceptador para configurar o formato
-    de dados desejado no servidor. Prefenimos como JSON.
-    
-    Explicação: 
-
-    Interceptadores (Middleware) tem como objetivo executar um treco 
-    de código antes da rota ser executada.
-
-    Obs.: Os interceptadores precisam ser inicializados antes
-    de todas as declarações de rotas. 
+    3. Definição do motor de renderização² das telas. 
+    Nesse caso definimos o handlebars, mas existe uma lista 
+    enorme de opções³.
 */
-app.use(express.json()); // Converte os valores do formulário para JSON.
-app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+aplicativo.set('view engine', 'handlebars');
 
-// 3. Criando a Rota e retornando um arquivo HTML.
-app.get('/cadastrar', (_, respostaDoServidor) => respostaDoServidor.sendFile(__dirname + '/cadastrar.html'));
+/* 
+    4. Configuração do Template Engine. 
+    No caso apenas definimos apenas qual arquivo será 
+    responsável por ser o modelo base que será reaproveitado 
+    em cada tela.
+*/
+aplicativo.engine('handlebars', handlebars({ defaultLayout: 'modelo' }));
 
-// 5. Criando a Rota para receber os dados.
-//app.post('/cadastrar', (requisicaoAoServidor, respostaDoServidor) => respostaDoServidor.json(requisicaoAoServidor.body));
-app.post('/cadastrar', (requisicaoAoServidor, respostaDoServidor) => {
-    // EXTRA: 5.1. Separando os atributos do objeto que me interessam.
-    // Documentação:  https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+// 5. Renderização² da tela cadastrar para o usuário.
+aplicativo.get('/', (_, respostaDoServidor) => respostaDoServidor.render('cadastrar',{ professores: professores.listar() }));
+
+// 6. Listar todos os professores cadastrados, e enviar os dados em JSON.
+aplicativo.get('/listar', (_, respostaDoServidor) => respostaDoServidor.json(professores.listar()));
+
+aplicativo.post('/cadastrar', (requisicaoAoServidor, respostaDoServidor) => {
     const { nome, sobrenome } = requisicaoAoServidor.body;
-    // EXTRA: 5.2. Cadastro do professor em nosso "banco de dados" improvidado.
-    // Obs.: Deve ter notado que não associei o contrutor a nenhuma instancia/variavel...
-    // No caso, como não será utilizado em nenhum trecho de código, posso simplesmente construir sem associar a uma variável.
     new CadastrarProfessor(nome, sobrenome);
 
-    // EXTRA: 5.3. Enviar para uma arquivo HTML responsável pelo resultado.
-    // Obs.: Isso não é um redirecionamento, apenas inserimos um HTML temporáricamente na rota /cadastrar.
-    respostaDoServidor.sendFile(__dirname + '/resultado.html');
+    respostaDoServidor.render('resultado');
 });
 
-// 6. Inicializar o servidor.
-app.listen(8081, () => console.log('Servidor funcionando!'));
+aplicativo.listen(8081, () => console.log('Servidor funcionando!'));
+
+/*
+    ¹ Template Engines auxiliam na manipulação de documentos html
+      inserindo recursos que facilitam a apresentação de dados dinânimos.
+      Alguns dos principais recursos são: variáveis, repetições, condicionais,
+      etc.
+
+    ² Renderizar é sinônimo de desenhar.
+    
+    ³ Existem algumas opções de Template Engines. O Express sugere alguns, 
+      mas com uma breve pesquisa, é possível encontrar muitas outras opções.
+      Documentação: https://expressjs.com/en/resources/template-engines.html
+*/

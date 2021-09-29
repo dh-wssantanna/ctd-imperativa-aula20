@@ -1,9 +1,9 @@
 // Importação do módulo File System do Nodejs.
 const fs = require('fs');
 // Carregar o arquivo do nosso banco de dados.
-const arquivo = fs.readFileSync(__dirname + '/banco-de-dados.json', 'utf-8');
+const arquivoEmJSON = fs.readFileSync(__dirname + '/banco-de-dados.json', 'utf-8');
 // Converte o arquivo de texto para objeto literal para poder manipulá-lo.
-const arquivoConvertidoEmJSON = JSON.parse(arquivo);
+const arquivoConvertidoEmObjetoLiteral = JSON.parse(arquivoEmJSON);
 
 function CadastrarProfessor(nomeDoProfessor, sobrenomeDoProfessor) {
 
@@ -52,17 +52,17 @@ function CadastrarProfessor(nomeDoProfessor, sobrenomeDoProfessor) {
                 Adiciono o objeto com o nome e sobrenome da Array.
                 Omiti o valor, pois o valor tem o mesmo nome da chave. O código a baixo acaba sendo a mesma coisa que:
 
-                arquivoConvertidoEmJSON.push({
+                arquivoConvertidoEmObjetoLiteral.push({
                     nome: nome,
                     sobrenome: sobrenome
                 });
             */
-            arquivoConvertidoEmJSON.push({
+            arquivoConvertidoEmObjetoLiteral.push({
                 nome,
                 sobrenome
             });
             // Converto o resultado em string.
-            const arquivoConvertidoEmString = JSON.stringify(arquivoConvertidoEmJSON);
+            const arquivoConvertidoEmString = JSON.stringify(arquivoConvertidoEmObjetoLiteral);
             // Sobrescreve o arquivo banco-de-dados.json com o arquivo atualizado.
             fs.writeFileSync(__dirname + '/banco-de-dados.json', arquivoConvertidoEmString);
         } 
