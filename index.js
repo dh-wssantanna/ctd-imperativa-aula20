@@ -54,7 +54,7 @@ aplicativo.post('/cadastrar', (requisicaoAoServidor, respostaDoServidor) => {
     respostaDoServidor.render('resultado');
 });
 
-aplicativo.listen(8081, () => console.log('Servidor funcionando!'));
+aplicativo.listen(1234, () => console.log('Servidor funcionando!'));
 
 /*
     ¹ Template Engines auxiliam na manipulação de documentos html
